@@ -10,8 +10,8 @@ function fit(){const r=fitTolerance(shield.settings,Number($('tolerance').value)
 $('fit').onclick=fit;
 $('tolerance').oninput=()=>{$('toleranceOut').textContent=Number($('tolerance').value).toFixed(2)+'% R';};
 $('tolerance').onchange=fit;
-$('wireframe').onclick=()=>{wire=!wire;$('wireframe').setAttribute('aria-pressed',wire);};
-let wire=false,normalView=false;const normalsButton=document.createElement('button');normalsButton.textContent='Show surface normals';normalsButton.setAttribute('aria-pressed','false');$('wireframe').after(normalsButton);normalsButton.onclick=()=>{normalView=!normalView;normalsButton.setAttribute('aria-pressed',normalView);normalsButton.textContent=normalView?'Show skin material':'Show surface normals';};
+$('wireframe').onchange=()=>{wire=$('wireframe').checked;normalsButton.disabled=wire||!skin;};
+let wire=false,normalView=false;const normalsButton=document.createElement('button');normalsButton.textContent='Show surface normals';normalsButton.setAttribute('aria-pressed','false');$('wireframe').parentElement.after(normalsButton);normalsButton.onclick=()=>{normalView=!normalView;normalsButton.setAttribute('aria-pressed',normalView);normalsButton.textContent=normalView?'Show skin material':'Show surface normals';};
 let skin;try{skin=createSkinRenderer(canvas);}catch(e){console.warn('Skin renderer unavailable',e);}if(!skin){normalsButton.disabled=true;normalsButton.textContent='Normal view requires GPU';}
 $('rotate').onclick=()=>{$('mode').value='manual';shield.setParameters({phi:shield.phi+30});};
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume motion':'Pause motion';};
@@ -28,7 +28,7 @@ function frame(time){if(last&&!document.hidden){frameSamples.push(time-last);if(
  const faces=[];
  for(let i=0;i<shield.indices.length;i+=3){const points=[];let depth=0;for(let j=0;j<3;j++){const n=shield.indices[i+j]*3,q=project(p.subarray(n,n+3));points.push(q);depth+=q[2];}faces.push({points,depth});}
  faces.sort((a,b)=>b.depth-a.depth);
- ctx.beginPath();for(const face of faces){face.points.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();}if(skin){skin.draw(shield,cam,w,h,normalView);}else{ctx.fillStyle='rgba(85,128,145,.55)';ctx.fill();}if(wire)ctx.stroke();
+ ctx.beginPath();for(const face of faces){face.points.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();}if(skin){skin.setVisible(!wire);if(!wire)skin.draw(shield,cam,w,h,normalView);}else if(!wire){ctx.fillStyle='rgba(85,128,145,.55)';ctx.fill();}if(wire)ctx.stroke();
 
  function dot(point,text,color){const q=project(point);ctx.fillStyle=color;ctx.beginPath();ctx.arc(q[0],q[1],4*dpr,0,Math.PI*2);ctx.fill();ctx.font=`${12*dpr}px system-ui`;ctx.fillText(text,q[0]+7*dpr,q[1]-7*dpr);}
  for(let k=0;k<12;k++){const a=(k*30-15)*Math.PI/180;dot([Math.cos(a),Math.sin(a),0],String(k+1),'#f0cd83');}dot(shield.N,'N','#ff985b');
