@@ -34,7 +34,7 @@ export function createSkinRenderer(overlay){
  const matrix=gl.getUniformLocation(program,'matrix'),eye=gl.getUniformLocation(program,'eye'),junction=gl.getUniformLocation(program,'junction');
  const showNormals=gl.getUniformLocation(program,'showNormals');
  let oldPositions,oldIndices;
- return {draw(mesh,camera,w,h,normalView=false){
+ return {setVisible(visible){canvas.hidden=!visible;},draw(mesh,camera,w,h,normalView=false){
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
   gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);
   gl.bindBuffer(gl.ARRAY_BUFFER,vertices);
