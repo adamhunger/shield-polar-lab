@@ -13,6 +13,21 @@ $('tolerance').onchange=fit;
 $('wireframe').onchange=()=>{wire=$('wireframe').checked;normalsButton.disabled=wire||!skin;};
 let wire=false,normalView=false;const normalsButton=document.createElement('button');normalsButton.textContent='Show surface normals';normalsButton.setAttribute('aria-pressed','false');$('wireframe').parentElement.after(normalsButton);normalsButton.onclick=()=>{normalView=!normalView;normalsButton.setAttribute('aria-pressed',normalView);normalsButton.textContent=normalView?'Show skin material':'Show surface normals';};
 let skin;try{skin=createSkinRenderer(canvas);}catch(e){console.warn('Skin renderer unavailable',e);}if(!skin){normalsButton.disabled=true;normalsButton.textContent='Normal view requires GPU';}
+// Ground is a separate background layer, below both GPU skin and Canvas grid.
+const ground=document.createElement('canvas');ground.setAttribute('aria-hidden','true');
+ground.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
+canvas.parentElement.prepend(ground);const gc=ground.getContext('2d');
+function drawGround(cam,w,h,dpr){
+ if(ground.width!==w||ground.height!==h){ground.width=w;ground.height=h;}
+ gc.clearRect(0,0,w,h);
+ // Axis-aligned square encloses the fixed station ring with a small margin.
+ const extent=1.02*shield.radius,corners=[[-extent,-extent,0],[extent,-extent,0],[extent,extent,0],[-extent,extent,0]];
+ gc.beginPath();corners.forEach((p,i)=>{const q=cam.project(p,w,h);i?gc.lineTo(q[0],q[1]):gc.moveTo(q[0],q[1]);});gc.closePath();
+ gc.fillStyle='#624633';gc.fill();gc.strokeStyle='#927052';gc.lineWidth=1.2*dpr;gc.stroke();
+ // Small flush pads show that each gold station sits on the ground plane.
+ for(let k=0;k<12;k++){const a=(k*30-15)*Math.PI/180,cx=shield.radius*Math.cos(a),cy=shield.radius*Math.sin(a),r=.018*shield.radius;
+ gc.beginPath();for(let i=0;i<=16;i++){const t=i*Math.PI/8,q=cam.project([cx+r*Math.cos(t),cy+r*Math.sin(t),0],w,h);i?gc.lineTo(q[0],q[1]):gc.moveTo(q[0],q[1]);}gc.fillStyle='#a88a59';gc.fill();}
+}
 $('rotate').onclick=()=>{$('mode').value='manual';shield.setParameters({phi:shield.phi+30});};
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume motion':'Pause motion';};
 $('export').onclick=()=>{const url=URL.createObjectURL(new Blob([exportGLB(shield)],{type:'model/gltf-binary'})),a=document.createElement('a');a.href=url;a.download='shield.glb';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
@@ -24,6 +39,7 @@ function frame(time){if(last&&!document.hidden){frameSamples.push(time-last);if(
  $('errorReadout').textContent=errorResult?'Sampled surface: '+errorResult.surface.toFixed(3)+'% R · boundary: '+errorResult.boundary.toFixed(3)+'% R'+(errorMode?(errorResult.max<=Number($('tolerance').value)?' · target met at current pose':' · target exceeded — refit'):''):'';
  for(const key of ['theta','phi','separation','influence']){$(key).value=shield[key];$(key+'Out').textContent=shield[key].toFixed(2)+(key==='influence'?'×':'°');}
  const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio,2),w=Math.round(rect.width*dpr),h=Math.round(rect.height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}ctx.clearRect(0,0,w,h);const cam=camera(yaw,pitch,w/h,1),project=p=>cam.project(p,w,h),p=shield.positions;
+ drawGround(cam,w,h,dpr);
  ctx.strokeStyle='#2f91b780';ctx.lineWidth=.6*dpr;
  const faces=[];
  for(let i=0;i<shield.indices.length;i+=3){const points=[];let depth=0;for(let j=0;j<3;j++){const n=shield.indices[i+j]*3,q=project(p.subarray(n,n+3));points.push(q);depth+=q[2];}faces.push({points,depth});}
