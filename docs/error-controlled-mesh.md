@@ -77,3 +77,14 @@ PBR material. A game can port the local-position noise shader separately.
 Error selection tests check a loose and tight request, error finiteness, explicit
 unmet-tolerance behavior, and settings preservation. Existing topology tests
 continue checking shared seams, anchors, sphere radius and rotational equivalence.
+
+## Normals and underside lighting
+
+The geometric outward normal is normalize(localPosition), since all analytic
+points lie on the same centred sphere. The skin shader flips this normal for
+back-facing fragments when computing two-sided lighting. Noise and the N glow
+continue using the outward direction, so the pattern does not flip on the underside.
+The normal visualization button displays outward XYZ mapped to RGB, without
+lighting or translucency: shared edges should have continuous colour. It requires
+the GPU renderer. The Canvas overlay is block-level so its dimensions align exactly
+with the underlying GPU canvas.
