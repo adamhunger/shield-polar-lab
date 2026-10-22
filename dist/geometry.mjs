@@ -1,0 +1,9 @@
+export const RAD=Math.PI/180, TAU=2*Math.PI;
+export const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
+export const norm=a=>Math.sqrt(dot(a,a));
+export const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+export const unit=a=>a.map(x=>x/norm(a));
+export function junction(theta,phi){return [Math.sin(theta*RAD)*Math.cos(phi*RAD),Math.sin(theta*RAD)*Math.sin(phi*RAD),Math.cos(theta*RAD)];}
+export function point(n,u,v,k){const phi=k*Math.PI/6+u*Math.PI/12,q=[Math.cos(phi),Math.sin(phi),0];const d=Math.acos(Math.max(-1,Math.min(1,dot(n,q))));const t=v*(Math.PI/6+(d-Math.PI/6)*u*u);const a=Math.cos(t),b=Math.sin(t)/Math.sin(d);return n.map((x,i)=>a*x+b*(q[i]-x*Math.cos(d)));}
+export function model(theta,phi){const n=junction(theta,phi),petals=[];for(let k=0;k<12;k++){const rows=[];for(let j=0;j<=24;j++){const row=[];for(let i=0;i<=40;i++)row.push(point(n,-1+i/20,j/24,k));rows.push(row);}const boundary=Array.from({length:81},(_,i)=>point(n,-1+i/40,1,k));const left=Array.from({length:65},(_,i)=>point(n,-1,i/64,k)),right=Array.from({length:65},(_,i)=>point(n,1,i/64,k));petals.push({rows,boundary,left,right,m:point(n,0,1,k)});}return {n,petals,A:point(n,-1,1,0),B:point(n,1,1,0),M:point(n,0,1,0)};}
+export function camera(yaw,pitch,aspect,zoom){const y=yaw*RAD,p=pitch*RAD,eye=[Math.cos(p)*Math.cos(y),Math.cos(p)*Math.sin(y),Math.sin(p)];const right=unit(cross([0,0,1],eye)),up=cross(eye,right),scale=zoom/1.22;const matrix=new Float32Array(16);for(let i=0;i<3;i++){matrix[i*4]=right[i]*scale/aspect;matrix[i*4+1]=up[i]*scale;matrix[i*4+2]=-eye[i]/5;}matrix[13]=-up[2]*.45*scale;matrix[14]=.5+eye[2]*.45/5;matrix[15]=1;return {matrix,eye,project(pt,w,h){let x=dot(right,pt)*scale/aspect,y=(dot(up,pt)-up[2]*.45)*scale;return [(x+1)*w/2,(1-y)*h/2,.5-(dot(eye,pt)-eye[2]*.45)/5];}};}
