@@ -4,6 +4,22 @@ An interactive WebGPU application for exploring a spherical shield whose twelve 
 
 Move **N** with polar controls or drag it in the top view. The oblique, top-down, and meridian views update together, preserving the geometric constraints developed in the reference diagram.
 
+![Shield Polar Lab running in Chrome with WebGPU, N displaced 50°](images/screenshots/overview.png)
+
+## Screenshots
+
+These were captured from the running app in Chrome with WebGPU active.
+
+| N at the original pole (θ = 0°) | N displaced (θ = 35°, φ = 120°) |
+| --- | --- |
+| ![Twelve symmetric petals meeting at the pole](images/screenshots/oblique-pole.png) | ![Petals stretched toward the displaced junction](images/screenshots/oblique-shifted.png) |
+
+The top view is the polar control: drag N inside the dashed 50° limit. The meridian view shows the section through the direction of motion.
+
+![Top view and meridian view for θ = 35°, φ = 120°](images/screenshots/top-and-meridian.png)
+
+The mathematical reference diagram the app reproduces:
+
 ![Spherical shield and its angular constraints](images/shield_shifted_petals.png)
 
 ## Quick start
@@ -109,9 +125,9 @@ npm run check
 
 The numerical checks cover 9,600 surface samples across several displacements and azimuths, and separately verify fixed anchors, shared seams, 30° midpoint distances, unit radius, upper-hemisphere containment, and the 10° reference limit.
 
-The interface was checked in a browser for live numeric controls, azimuth updates, reset, and keyboard polar movement. The preview environment did not expose WebGPU, so native GPU rendering has **not** been verified on hardware in this environment. The Canvas fallback was visually checked. These tests validate the mathematical implementation, not all browser/GPU combinations.
+The interface was checked in a browser for live numeric controls, azimuth updates, reset, and keyboard polar movement. Native WebGPU rendering has been verified in Chrome on macOS (Apple silicon); the screenshots above come from that run. The Canvas fallback was visually checked. These tests validate the mathematical implementation, not all browser/GPU combinations.
 
-Before a public release, open the app over localhost or HTTPS on your target machine, confirm **WebGPU active**, and check orbiting, polar dragging, resizing, and the reference pose. The fallback uses a simpler painter-based display; its occlusion and line rendering differ from the depth-tested GPU renderer.
+On a new target machine, open the app over localhost or HTTPS, confirm **WebGPU active**, and check orbiting, polar dragging, resizing, and the reference pose. The fallback uses a simpler painter-based display; its occlusion and line rendering differ from the depth-tested GPU renderer.
 
 ## Regenerate the diagrams
 
@@ -128,17 +144,7 @@ python tools/draw_shifted.py
 
 The scripts write PNGs into `images/`, independent of the current working directory.
 
-## Publish on GitHub
-
-Create an empty repository, then run these commands from this directory, replacing the example remote with your repository:
-
-```sh
-git init -b main
-git add .
-git commit -m "Add spherical shield polar explorer"
-git remote add origin https://github.com/YOUR-ACCOUNT/shield-polar-lab.git
-git push -u origin main
-```
+## Hosting
 
 For static hosting, publish the contents of `dist/` unchanged. All asset references are relative, so a project subpath is supported. For GitHub Pages, configure a deployment that uploads `dist/` as the Pages artifact, or copy its contents to the root of a dedicated Pages branch. No secrets, deployment credentials, private hosting configuration, or previous repository history are included in this export.
 
