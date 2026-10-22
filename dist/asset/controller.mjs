@@ -1,17 +1,34 @@
 import {point,junction,RAD} from '../geometry.mjs';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export class ShieldController {
-  constructor({radius=1,segments=32,rings=16}={}) {
+  constructor({radius=1,segments=32,rings=16,meshMode="uniform"}={}) {
     if(!Number.isFinite(radius)||radius<=0||!Number.isInteger(segments)||segments<4||segments>128||!Number.isInteger(rings)||rings<2||rings>128)throw Error('Invalid radius or tessellation');
     Object.assign(this,{radius,segments,rings,theta:50,phi:0,influence:1,separation:30});
-    this.count=1+rings*(segments+1);
+    if(!['uniform','adaptive'].includes(meshMode))throw Error('Invalid mesh mode');
+    this.meshMode=meshMode;
+    // Even counts preserve u=0; keep the entire original outer boundary.
+    this.rowSegments=Array.from({length:rings},(_,j)=>meshMode==='uniform'||j===rings-1?segments:Math.min(segments,Math.max(2,2*Math.ceil(segments*(j+1)/rings/2))));
+    this.count=1+this.rowSegments.reduce((n,m)=>n+m+1,0);
     this.positions=new Float32Array(12*this.count*3);this.normals=new Float32Array(this.positions.length);
     this.parameters=new Float32Array(this.positions.length);const indices=[];
     for(let k=0;k<12;k++){
       const base=k*this.count;this.parameters.set([0,0,k],base*3);
-      for(let j=1;j<=rings;j++)for(let i=0;i<=segments;i++)this.parameters.set([-1+2*i/segments,j/rings,k],3*(base+1+(j-1)*(segments+1)+i));
-      for(let i=0;i<segments;i++)indices.push(base,base+1+i,base+2+i);
-      for(let j=1;j<rings;j++)for(let i=0;i<segments;i++){const a=base+1+(j-1)*(segments+1)+i,b=a+segments+1;indices.push(a,b,a+1,a+1,b,b+1);}
+      let offset=base+1,previous=base,prevCount=0;
+      for(let j=1;j<=rings;j++){
+        const m=this.rowSegments[j-1];
+        for(let i=0;i<=m;i++)this.parameters.set([-1+2*i/m,j/rings,k],3*(offset+i));
+        if(j===1){for(let i=0;i<m;i++)indices.push(base,offset+i,offset+i+1);}
+        else {
+          // Zipper triangulation connects rows with different sample counts.
+          let a=0,b=0;
+          while(a<prevCount||b<m){
+            if(a<prevCount&&(b===m||(a+1)/prevCount<=(b+1)/m)){
+              indices.push(previous+a,offset+b,previous+a+1);a++;
+            }else{indices.push(previous+a,offset+b,offset+b+1);b++;}
+          }
+        }
+        previous=offset;prevCount=m;offset+=m+1;
+      }
     }
     this.indices=new Uint32Array(indices);this.update();
   }
@@ -30,6 +47,6 @@ export class ShieldController {
     for(let i=0;i<this.positions.length;i+=3){const [u,v,k]=this.parameters.subarray(i,i+3),p=point(n,u,v,k,this.influence,this.separation);for(let c=0;c<3;c++){this.positions[i+c]=p[c]*this.radius;this.normals[i+c]=p[c];}}
     return this;
   }
-  get settings(){return {radius:this.radius,segments:this.segments,rings:this.rings,theta:this.theta,phi:this.phi,influence:this.influence,separation:this.separation};}
+  get settings(){return {meshMode:this.meshMode,radius:this.radius,segments:this.segments,rings:this.rings,theta:this.theta,phi:this.phi,influence:this.influence,separation:this.separation};}
   get sector(){return {index:Math.floor((this.phi+15)%360/30),localDegrees:((this.phi+15)%30)-15};}
 }
