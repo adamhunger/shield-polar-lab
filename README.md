@@ -45,18 +45,21 @@ The header reports **WebGPU active** when the native renderer initializes. If We
 | --- | --- |
 | Polar displacement θ | Move N from the original pole through 0–50°. |
 | Azimuth φ | Choose any direction around the pole, 0–360°. |
+| M influence w | Shape all 12 petals around their fixed midpoints: 0.25× is sharper, 4× is broader, and 1× restores the original profile. |
+| N–M distance δ | Set all 12 midpoint distances together, from 5° to the original model maximum of 30°. N retains its 0°–50° displacement range, preserving at least 10° midpoint clearance. |
+| Reset influence | Restore w = 1 without moving N. |
 | Top view | Click or drag within the dashed limit to position N. |
 | Top-view arrow keys | Up/down change displacement; left/right change azimuth. |
 | Oblique view | Drag to orbit; scroll to zoom. |
 | Oblique-view keyboard | Arrow keys orbit; `+`/`-` zoom. |
 | At the pole | Restore the symmetric twelve-petal arrangement. |
-| Our diagram | Set θ = 50°, φ = 0°. |
+| Our diagram | Set θ = 50°, φ = 0°, w = 1. |
 | Restore diagram view | Restore the reference geometry and camera. |
 | Sphere guide / Labels | Toggle the sphere grid and point labels. |
 | Sweep azimuth | Animate the direction of N; click again to pause. |
 | Export geometry | Download the current settings, anchors, surface samples, and boundaries as JSON. |
 
-**A**, **B**, and **M** always refer to petal 1. **N** denotes the moving junction, not the geographic north pole after displacement. The meridian view shows the forward point **C**, 30° beyond N in the direction of motion. C coincides with M at azimuth 0°; at the centered pose all meridian sections have the same angular geometry.
+**A**, **B**, and **M** always refer to petal 1. **N** denotes the moving junction, not the geographic north pole after displacement. The meridian view shows the forward point **C**, the selected separation beyond N in the direction of motion. C coincides with M at azimuth 0°; at the centered pose all meridian sections have the same angular geometry.
 
 ## Geometry and constraints
 
@@ -64,7 +67,7 @@ The model uses a unit sphere centered at the origin with the z-axis pointing to 
 
 - Twelve equatorial anchors remain 30° apart and never move.
 - N remains on the upper hemisphere and within 50° of its original pole.
-- Each petal's midpoint remains a spherical arc distance of 30° from N.
+- Each petal's midpoint shares the selected spherical arc distance δ from N (5°–30°).
 - This 50° displacement cap guarantees every midpoint is at least 10° above the equator. It is a conservative direction-independent bound, not a search for the largest possible displacement at every azimuth.
 - Every interior surface point remains on the sphere.
 - Neighboring petals share their entire side arc without gaps.
@@ -87,9 +90,12 @@ For petal index k = 0,…,11, horizontal parameter −1 ≤ u ≤ 1, and radial 
 
 ```math
 d_k(u)=\arccos(N\cdot Q_k(u)),
-\qquad b_k(u)=\pi/6+[d_k(u)-\pi/6]u^2,
+\qquad f_k(u)=\frac{u^2}{w_k+(1-w_k)u^2},
+\qquad b_k(u)=δ+[d_k(u)-δ]f_k(u),
 \qquad t=v\,b_k(u).
 ```
+
+All twelve wₖ use the same M influence (0.25–4); δ is the selected separation in radians. Increasing w broadens the part of the boundary held near M; decreasing w sharpens it. It is a dimensionless shape weight, not a physical force or a draggable tangent handle. N, M, A, B, and all shared side arcs stay fixed when only this weight changes.
 
 The spherical surface is:
 
@@ -97,9 +103,9 @@ The spherical surface is:
 P_k(u,v)=\cos(t)N+\frac{\sin(t)}{\sin(d_k(u))}\left[Q_k(u)-\cos(d_k(u))N\right].
 ```
 
-Here v = 0 is N; v = 1 is the curved lower boundary; u = ±1 are the shared great-circle side arcs. At u = 0, the boundary midpoint is always 30° from N. At u = ±1 and v = 1, the formula reaches the fixed equatorial anchor.
+Here v = 0 is N; v = 1 is the curved lower boundary; u = ±1 are the shared great-circle side arcs. At u = 0, the boundary midpoint is always δ from N. At u = ±1 and v = 1, the formula reaches the fixed equatorial anchor.
 
-This is an explicit deformation rule, not a physically simulated membrane. Three boundary points alone do not specify a unique spline; the quadratic angular profile is the selected smooth interpolation. In the initial pose d = π/2, it reduces to the original boundary angle π/6 + (π/3)u². In the reference displaced pose, N moves 50° and M moves to polar angle 80°, leaving 10° to the equator.
+This is an explicit deformation rule, not a physically simulated membrane. Three boundary points alone do not specify a unique spline; the weighted angular profile is the selected smooth interpolation. At w = 1 it is exactly the original quadratic profile. In the initial pose with w = 1 and d = π/2, it reduces to the original boundary angle π/6 + (π/3)u². In the reference displaced pose, N moves 50° and M moves to polar angle 80°, leaving 10° to the equator.
 
 ## Project layout
 
@@ -124,6 +130,8 @@ This is an explicit deformation rule, not a physically simulated membrane. Three
 npm test
 npm run check
 ```
+
+Additional influence checks cover 0.25×, 1×, and 4× across several poses, verifying the fixed midpoint, endpoints, shared side arcs, synchronized influence across every petal, and the expected broadening direction. Native GPU rendering and the revised controls still need a target-machine check. JSON exports include `midpointInfluence` and the corresponding weighted equation.
 
 The numerical checks cover 9,600 surface samples across several displacements and azimuths, and separately verify fixed anchors, shared seams, 30° midpoint distances, unit radius, upper-hemisphere containment, and the 10° reference limit.
 
@@ -160,3 +168,4 @@ Released under the [MIT License](LICENSE). The PNG concept illustrations are AI-
 
 - [WebGPU specification](https://www.w3.org/TR/webgpu/)
 - [WebGPU Shading Language specification](https://www.w3.org/TR/WGSL/)
+
