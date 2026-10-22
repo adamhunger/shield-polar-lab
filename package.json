@@ -1,0 +1,13 @@
+{
+  "name": "shield-polar-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WebGPU spherical shield with polar control, twelve fixed equatorial anchors, and constrained petal deformation.",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node check.mjs",
+    "check": "node --check dist/app.mjs && node --check dist/geometry.mjs && node check.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

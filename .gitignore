@@ -6,3 +6,6 @@ __pycache__/
 .env.*
 *.log
 .openai/
+
+# dist/ is the app source here (overrides global ignore)
+!dist/
