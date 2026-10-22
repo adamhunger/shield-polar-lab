@@ -56,13 +56,21 @@ benchmark or production automatic LOD controller.
 
 ## Appearance
 
-The preview has a generated blue/cyan mottled translucent Canvas pattern, with
-optional wireframe. It uses deterministic sinusoidal noise on a 128x128 tile,
-transparent alpha, and a batched Canvas surface fill. The pattern is screen-space
-and is intended to help assess the silhouette and surface, not a final material.
-Overlapping projections share a single translucent fill rather than physically layered transparency. GLB exports retain the
-existing portable blue PBR material; this preview-only pattern is not baked into
-the asset. A game should implement world-space noise in its shader.
+The preview now uses a quiet blue-grey pearlescent material with broad, low-contrast
+teal/violet variation. A WebGL2 fragment shader evaluates smooth 3D value noise
+from shield-local position; all petals use the same field. There are no UV tiles
+or per-petal texture coordinates, so colour agrees across shared seams and stays
+anchored to the sphere during camera motion. A grazing-angle sheen and a soft
+highlight around N suggest a translucent octopus mantle without literal anatomy.
+
+A depth prepass selects the nearest visible surface, followed by one translucent
+colour pass composited over the page. This deliberately avoids stacked alpha at
+triangle seams. It approximates a thin translucent skin, not volumetric scattering
+or multiple transparent layers. Wireframe and labels remain on the Canvas overlay.
+Without WebGL2, the preview uses a plain translucent blue-grey Canvas fill.
+
+The GPU material is preview-only. GLB exports retain the existing portable blue
+PBR material. A game can port the local-position noise shader separately.
 
 ## Tests
 
