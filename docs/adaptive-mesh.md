@@ -76,6 +76,6 @@ reporting after ten samples. Switching meshes or changing tab visibility clears
 the window so measurements from different modes/background throttling do not mix.
 Long visible-frame stalls remain in the sample. This is browser frame cadence,
 not GPU execution time; it is affected by refresh rate, browser load and the
-Canvas diagnostic renderer. Pause freezes geometry motion, not rendering.
+active preview renderer (WebGPU, WebGL2 or Canvas). Pause freezes geometry motion, not rendering.
 Compare modes at the same pose, camera, viewport and motion setting, allowing
 a full sample window to settle. CPU geometry timing is separate.

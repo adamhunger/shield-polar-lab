@@ -57,7 +57,7 @@ benchmark or production automatic LOD controller.
 ## Appearance
 
 The preview now uses a quiet blue-grey pearlescent material with broad, low-contrast
-teal/violet variation. A WebGL2 fragment shader evaluates smooth 3D value noise
+teal/violet variation. A WebGPU fragment shader (WebGL2 as fallback) evaluates smooth 3D value noise
 from shield-local position; all petals use the same field. There are no UV tiles
 or per-petal texture coordinates, so colour agrees across shared seams and stays
 anchored to the sphere during camera motion. A grazing-angle sheen and a soft
@@ -66,8 +66,8 @@ highlight around N suggest a translucent octopus mantle without literal anatomy.
 A depth prepass selects the nearest visible surface, followed by one translucent
 colour pass composited over the page. This deliberately avoids stacked alpha at
 triangle seams. It approximates a thin translucent skin, not volumetric scattering
-or multiple transparent layers. Wireframe and labels remain on the Canvas overlay.
-Without WebGL2, the preview uses a plain translucent blue-grey Canvas fill.
+or multiple transparent layers. With WebGPU the grid is drawn on the GPU too; labels remain on the Canvas overlay.
+Without WebGPU or WebGL2, the preview uses a plain translucent blue-grey Canvas fill.
 
 The GPU material is preview-only. GLB exports retain the existing portable blue
 PBR material. A game can port the local-position noise shader separately.
