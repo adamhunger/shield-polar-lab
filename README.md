@@ -154,7 +154,7 @@ For other static hosting, publish the contents of `dist/` unchanged. All asset r
 
 ## License and artwork
 
-No open-source license has been selected. Choose a license before presenting this repository as open source. The PNG concept illustrations are AI-generated design studies; the three mathematical diagrams are programmatically plotted. See [the image inventory](images/README.md) for provenance and the distinction between concept art and exact geometry.
+Released under the [MIT License](LICENSE). The PNG concept illustrations are AI-generated design studies; the three mathematical diagrams are programmatically plotted. See [the image inventory](images/README.md) for provenance and the distinction between concept art and exact geometry.
 
 ## References
 

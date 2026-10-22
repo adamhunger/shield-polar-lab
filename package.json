@@ -2,6 +2,7 @@
   "name": "shield-polar-lab",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "WebGPU spherical shield with polar control, twelve fixed equatorial anchors, and constrained petal deformation.",
   "type": "module",
   "scripts": {
