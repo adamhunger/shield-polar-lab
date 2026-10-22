@@ -1,8 +1,9 @@
 # Procedural shield game asset prototype
 
 Open `asset/` on the local server (or GitHub Pages after this branch is deployed).
-The original Polar Lab is unchanged. This diagnostic harness uses Canvas so the
-controller can be exercised independently of a particular game renderer.
+The original Polar Lab is unchanged. This harness renders the shield with WebGPU
+(`gpu.mjs`), falling back to WebGL2 (`skin.mjs`) and then plain Canvas. Ground and
+labels are Canvas layers, so the controller stays independent of any game renderer.
 
 ## Run
 
@@ -65,8 +66,8 @@ or regenerate the original mesh. Some loaders discard custom attributes/extras;
 verify their preservation in your chosen engine.
 
 The GLB does not include glow, shimmer, impact physics or runtime logic. Those are
-game effects. Canvas is only the test renderer; the arrays work with WebGPU or other
-indexed-mesh engines. The existing main demo remains the WebGPU reference viewer.
+game effects. The harness renderers are only for testing; the arrays work with any
+indexed-mesh engine. The existing main demo remains the WebGPU reference viewer.
 
 ## Symmetry
 

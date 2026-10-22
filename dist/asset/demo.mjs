@@ -1,4 +1,5 @@
 import {createSkinRenderer} from './skin.mjs';
+import {createGPUSkinRenderer} from './gpu.mjs';
 import {ShieldController} from './controller.mjs';
 import {measureError,fitTolerance} from './error.mjs';
 import {exportGLB} from './glb.mjs';
@@ -12,7 +13,7 @@ $('tolerance').oninput=()=>{$('toleranceOut').textContent=Number($('tolerance').
 $('tolerance').onchange=fit;
 $('wireframe').onchange=()=>{wire=$('wireframe').checked;normalsButton.disabled=wire||!skin;};
 let wire=false,normalView=false;const normalsButton=document.createElement('button');normalsButton.textContent='Show surface normals';normalsButton.setAttribute('aria-pressed','false');$('wireframe').parentElement.after(normalsButton);normalsButton.onclick=()=>{normalView=!normalView;normalsButton.setAttribute('aria-pressed',normalView);normalsButton.textContent=normalView?'Show skin material':'Show surface normals';};
-let skin;try{skin=createSkinRenderer(canvas);}catch(e){console.warn('Skin renderer unavailable',e);}if(!skin){normalsButton.disabled=true;normalsButton.textContent='Normal view requires GPU';}
+let skin;try{skin=await createGPUSkinRenderer(canvas);}catch(e){console.warn('WebGPU skin unavailable',e);}if(!skin)try{skin=createSkinRenderer(canvas);}catch(e){console.warn('Skin renderer unavailable',e);}if(!skin){normalsButton.disabled=true;normalsButton.textContent='Normal view requires GPU';}
 // Ground is a separate background layer, below both GPU skin and Canvas grid.
 const ground=document.createElement('canvas');ground.setAttribute('aria-hidden','true');
 ground.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
@@ -41,14 +42,18 @@ function frame(time){if(last&&!document.hidden){frameSamples.push(time-last);if(
  const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio,2),w=Math.round(rect.width*dpr),h=Math.round(rect.height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}ctx.clearRect(0,0,w,h);const cam=camera(yaw,pitch,w/h,1),project=p=>cam.project(p,w,h),p=shield.positions;
  drawGround(cam,w,h,dpr);
  ctx.strokeStyle='#2f91b780';ctx.lineWidth=.6*dpr;
+ const gpuDraws=skin&&(!wire||skin.gridLines);if(skin){skin.setVisible(gpuDraws);if(gpuDraws)skin.draw(shield,cam,w,h,normalView,wire);}
+ // The Canvas triangle path is costly; build it only when no GPU renderer covers this view.
+ if(!gpuDraws){
  const faces=[];
  for(let i=0;i<shield.indices.length;i+=3){const points=[];let depth=0;for(let j=0;j<3;j++){const n=shield.indices[i+j]*3,q=project(p.subarray(n,n+3));points.push(q);depth+=q[2];}faces.push({points,depth});}
  faces.sort((a,b)=>b.depth-a.depth);
- ctx.beginPath();for(const face of faces){face.points.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();}if(skin){skin.setVisible(!wire);if(!wire)skin.draw(shield,cam,w,h,normalView);}else if(!wire){ctx.fillStyle='rgba(85,128,145,.55)';ctx.fill();}if(wire)ctx.stroke();
+ ctx.beginPath();for(const face of faces){face.points.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();}if(wire)ctx.stroke();else{ctx.fillStyle='rgba(85,128,145,.55)';ctx.fill();}
+ }
 
  function dot(point,text,color){const q=project(point);ctx.fillStyle=color;ctx.beginPath();ctx.arc(q[0],q[1],4*dpr,0,Math.PI*2);ctx.fill();ctx.font=`${12*dpr}px system-ui`;ctx.fillText(text,q[0]+7*dpr,q[1]-7*dpr);}
  for(let k=0;k<12;k++){const a=(k*30-15)*Math.PI/180;dot([Math.cos(a),Math.sin(a),0],String(k+1),'#f0cd83');}dot(shield.N,'N','#ff985b');
- $('stats').textContent=`${fpsText} · estimate over last ${frameSamples.length} frames\n ${errorMode?'ERROR-CONTROLLED':shield.meshMode.toUpperCase()} · ${(100*(1-shield.indices.length/3/6624)).toFixed(1)}% fewer triangles\n${shield.positions.length/3} vertices · ${shield.indices.length/3} triangles · reusable buffers\nSector ${shield.sector.index+1} · local azimuth ${shield.sector.localDegrees.toFixed(2)}° · CPU geometry ${ms.toFixed(2)} ms\n ${skin?'GPU pearlescent skin':'Plain Canvas fallback'} · local Z-up · GLB root converts to Y-up`;
+ $('stats').textContent=`${fpsText} · estimate over last ${frameSamples.length} frames\n ${errorMode?'ERROR-CONTROLLED':shield.meshMode.toUpperCase()} · ${(100*(1-shield.indices.length/3/6624)).toFixed(1)}% fewer triangles\n${shield.positions.length/3} vertices · ${shield.indices.length/3} triangles · reusable buffers\nSector ${shield.sector.index+1} · local azimuth ${shield.sector.localDegrees.toFixed(2)}° · CPU geometry ${ms.toFixed(2)} ms\n ${skin?skin.kind+' pearlescent skin':'Plain Canvas fallback'} · local Z-up · GLB root converts to Y-up`;
  requestAnimationFrame(frame);
 }requestAnimationFrame(frame);
 // Integration entry point: pass a direction from your game's targeting calculation.

@@ -4,6 +4,8 @@ An interactive WebGPU application for exploring a spherical shield whose twelve 
 
 Move **N** with polar controls or drag it in the top view. The oblique, top-down, and meridian views update together, preserving the geometric constraints developed in the reference diagram.
 
+**WebGPU mesh asset demo: https://adamhunger.github.io/shield-polar-lab/asset/**
+
 **Try it live: https://adamhunger.github.io/shield-polar-lab/**
 
 ![Shield Polar Lab running in Chrome with WebGPU, N displaced 50°](images/screenshots/overview.png)
