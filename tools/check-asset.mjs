@@ -35,3 +35,13 @@ for(const theta of [0,25,50])for(const phi of [0,15,359.99])for(const separation
  for(let k=0;k<12;k++)for(let v=0;v<a.count;v++){const i=3*(k*a.count+v),j=3*(((k+1)%12)*a.count+v);near(a.positions[j],Math.cos(Math.PI/6)*old[i]-.5*old[i+1]);near(a.positions[j+1],.5*old[i]+Math.cos(Math.PI/6)*old[i+1]);near(a.positions[j+2],old[i+2]);}
 }
 console.log('Adaptive topology: boundary, seams, winding, sphere and rotational equivalence verified.');
+
+const {fitTolerance,measureError}=await import('../dist/asset/error.mjs');
+const settings={theta:50,phi:0,separation:30,influence:1};
+const loose=fitTolerance(settings,8),tight=fitTolerance(settings,2),unmet=fitTolerance(settings,.000001);
+assert(loose.met&&tight.met);assert(loose.mesh.indices.length<tight.mesh.indices.length);
+assert(loose.error.max<=8&&tight.error.max<=2);assert(!unmet.met);
+assert.equal(tight.mesh.theta,50);assert.equal(tight.mesh.separation,30);
+assert.deepEqual(measureError(tight.mesh),tight.error);
+assert.throws(()=>fitTolerance(settings,0));
+console.log('Tolerance selection, measured errors and unmet-target reporting verified.');
