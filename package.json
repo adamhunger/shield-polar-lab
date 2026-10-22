@@ -7,8 +7,10 @@
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "test": "node check.mjs",
-    "check": "node --check dist/app.mjs && node --check dist/geometry.mjs && node check.mjs"
+    "test": "node check.mjs && node tools/check-asset.mjs",
+    "check": "node --check dist/app.mjs && node --check dist/geometry.mjs && node check.mjs && node tools/check-asset.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

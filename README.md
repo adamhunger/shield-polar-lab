@@ -169,3 +169,7 @@ Released under the [MIT License](LICENSE). The PNG concept illustrations are AI-
 - [WebGPU specification](https://www.w3.org/TR/webgpu/)
 - [WebGPU Shading Language specification](https://www.w3.org/TR/WGSL/)
 
+
+## Game asset prototype
+
+A separate test harness lives at `dist/asset/index.html`. Run `npm start` and open `/asset/` to drive N dynamically, sweep a fundamental wedge, and export a GLB snapshot. See [integration instructions](dist/asset/README.md) for the reusable controller, coordinate conventions, and game integration. The asset tests run with `npm run check`.
