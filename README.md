@@ -4,6 +4,8 @@ An interactive WebGPU application for exploring a spherical shield whose twelve 
 
 Move **N** with polar controls or drag it in the top view. The oblique, top-down, and meridian views update together, preserving the geometric constraints developed in the reference diagram.
 
+**Try it live: https://adamhunger.github.io/shield-polar-lab/**
+
 ![Shield Polar Lab running in Chrome with WebGPU, N displaced 50°](images/screenshots/overview.png)
 
 ## Screenshots
@@ -146,11 +148,13 @@ The scripts write PNGs into `images/`, independent of the current working direct
 
 ## Hosting
 
-For static hosting, publish the contents of `dist/` unchanged. All asset references are relative, so a project subpath is supported. For GitHub Pages, configure a deployment that uploads `dist/` as the Pages artifact, or copy its contents to the root of a dedicated Pages branch. No secrets, deployment credentials, private hosting configuration, or previous repository history are included in this export.
+The live site is deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`: it runs `npm run check`, then uploads `dist/` as the Pages artifact. You can also start it manually from the repository's Actions tab.
+
+For other static hosting, publish the contents of `dist/` unchanged. All asset references are relative, so a project subpath is supported. No secrets, deployment credentials, private hosting configuration, or previous repository history are included in this export.
 
 ## License and artwork
 
-No open-source license has been selected. Choose a license before presenting this repository as open source. The PNG concept illustrations are AI-generated design studies; the three mathematical diagrams are programmatically plotted. See [the image inventory](images/README.md) for provenance and the distinction between concept art and exact geometry.
+Released under the [MIT License](LICENSE). The PNG concept illustrations are AI-generated design studies; the three mathematical diagrams are programmatically plotted. See [the image inventory](images/README.md) for provenance and the distinction between concept art and exact geometry.
 
 ## References
 
