@@ -9,3 +9,6 @@ __pycache__/
 
 # dist/ is the app source here (overrides global ignore)
 !dist/
+
+# Local session restart notes
+RESTART_PROMPT.md
